@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>NOTAA YouTube Downloader</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: monospace;
+      background: #000;
+      color: #0f0;
+      text-align: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    video.bg-video {
+      position: fixed;
+      right: 0;
+      bottom: 0;
+      min-width: 100%;
+      min-height: 100%;
+      z-index: -1;
+      object-fit: cover;
+      filter: brightness(0.4);
+    }
+    .container {
+      padding: 60px 20px;
+      max-width: 800px;
+      margin: auto;
+      position: relative;
+      z-index: 1;
+    }
+    input, button {
+      padding: 12px 18px;
+      font-size: 18px;
+      margin: 10px auto;
+      background: #111;
+      color: #0f0;
+      border: 2px solid #0f0;
+      border-radius: 5px;
+      width: 90%;
+      max-width: 600px;
+      display: block;
+    }
+    button:hover {
+      background: #0f0;
+      color: #000;
+      cursor: pointer;
+    }
+    #status, #songTitle {
+      margin-top: 15px;
+      font-size: 16px;
+    }
+    a.download-link {
+      display: block;
+      margin-top: 12px;
+      font-size: 18px;
+      color: #0f0;
+      text-decoration: none;
+    }
+    a.download-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <video class="bg-video" autoplay muted loop>
+    <source src="https://cdn.pixabay.com/video/2017/11/06/9320-242082381_large.mp4" type="video/mp4">
+  </video>
+
+  <div class="container">
+    <h1>NOTAA 𝗬𝗼𝘂𝗧𝘂𝗯𝗲 𝗗𝗼𝘄𝗻𝗹𝗼𝗮𝗱𝗲𝗿</h1>
+    <input type="text" id="query" placeholder="Paste YouTube link or type video title" />
+    <button onclick="download('audio')">🎧 Download MP3</button>
+    <button onclick="download('video')">🎬 Download MP4 (1080p)</button>
+    <p id="status"></p>
+    <h2 id="songTitle"></h2>
+  </div>
+
+  <script>
+    async function download(type) {
+      const query = document.getElementById("query").value.trim();
+      const status = document.getElementById("status");
+      const songTitle = document.getElementById("songTitle");
+
+      status.textContent = "";
+      songTitle.textContent = "";
+
+      if (!query) {
+        status.textContent = "❌ Please enter a YouTube link or video title.";
+        return;
+      }
+
+      status.textContent = "⏳ Fetching download link...";
+
+      try {
+        const res = await fetch(`https://yt-api-1080p.onrender.com/download?query=${encodeURIComponent(query)}`);
+        const data = await res.json();
+
+        if (!data || !data.success) {
+          status.textContent = "❌ Could not retrieve download link.";
+          return;
+        }
+
+        songTitle.textContent = `🎵 ${data.title}`;
+
+        if (type === "audio" && data.mp3) {
+          window.open(data.mp3, '_blank');
+        } else if (type === "video" && data.mp4_1080p) {
+          window.open(data.mp4_1080p, '_blank');
+        } else {
+          status.textContent = `❌ ${type.toUpperCase()} not available for this video.`;
+        }
+      } catch (err) {
+        console.error(err);
+        status.textContent = "❌ Error occurred. Try again later.";
+      }
+    }
+  </script>
+</body>
+</html>
